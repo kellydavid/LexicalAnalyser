@@ -1,0 +1,5 @@
+# Ignore java binary files
+bin/*
+.classpath
+.project
+.settings/*
