@@ -16,10 +16,12 @@ public class LexicalAnalyser {
 	 */
 	public static LexicalToken analyseString(String input){
 		//append end marker
-		input += END_MARKER;
+		if(input.contains(END_MARKER + ""))
+			return null;//throw exception
+		String processInput = input + END_MARKER;
 		int machineState = 1;
 		int nextState = 1;
-		char[] inChars = input.toCharArray();
+		char[] inChars = processInput.toCharArray();
 		char current_char;
 		for(int i = 0; i < inChars.length; i++){
 			current_char = inChars[i];
@@ -42,58 +44,63 @@ public class LexicalAnalyser {
 				else if(isDec(current_char))
 					nextState = 3;
 				else if(isB(current_char))
-					nextState = 6;
+					nextState = 7;
 				else if(isHex(current_char))
 					nextState = 4;
 				else if(isH(current_char))
-					nextState = 7;
+					nextState = 8;
 				else if(isEndMarker(current_char))
 					return new LexicalToken(LexicalToken.TokenClass.INTEGER, input);
 				else
 					return null;
 				break;
 			case 3:
-				if(isOct(current_char) || isDec(current_char))
+				if(isDec(current_char))
 					nextState = 3;
 				else if(isHex(current_char))
 					nextState = 4;
 				else if(isH(current_char))
-					nextState = 7;
+					nextState = 8;
 				else if(isEndMarker(current_char))
 					return new LexicalToken(LexicalToken.TokenClass.INTEGER, input);
 				else
 					return null;
 				break;
 			case 4:
-				if(isOct(current_char) || isDec(current_char) || isHex(current_char))
+				if(isDec(current_char) || isHex(current_char))
 					nextState = 4;
 				else if(isH(current_char))
-					nextState = 7;
+					nextState = 8;
 				else
 					return null;
 				break;
 			case 5:
 				if(isDec(current_char))
-					nextState = 5;
-				else if(isEndMarker(current_char))
-					return new LexicalToken(LexicalToken.TokenClass.INTEGER, input);
+					nextState = 6;
 				else 
 					return null;
 				break;
 			case 6:
-				if(isDec(current_char) || isHex(current_char))
-					nextState = 4;
-				else if(isH(current_char))
-					nextState = 7;
+				if(isDec(current_char))
+					nextState = 6;
 				else if(isEndMarker(current_char))
-					return new LexicalToken(LexicalToken.TokenClass.OCTAL, input);
+					return new LexicalToken(LexicalToken.TokenClass.INTEGER, input);
 				else
 					return null;
 				break;
 			case 7:
+				if(isDec(current_char) || isHex(current_char))
+					nextState = 4;
+				else if(isH(current_char))
+					nextState = 8;
+				else if(isEndMarker(current_char))
+					return new LexicalToken(LexicalToken.TokenClass.OCTAL, input);
+				else 
+					return null;
+			case 8:
 				if(isEndMarker(current_char))
 					return new LexicalToken(LexicalToken.TokenClass.HEXADECIMAL, input);
-				else 
+				else
 					return null;
 			default:
 				return null;
