@@ -45,6 +45,11 @@ public class LexicalToken {
 	private boolean hasOverflow(){
 		assert(tValue != "");
 		assert(!this.hasLeadingZeros());
+		if(this.hasLeadingZeros()){
+			System.out.println("LEADING ZEROS!!!");
+			return false;
+		}
+			
 		char[] inputChars = tValue.toCharArray();
 		if(tClass == TokenClass.INTEGER){
 			if(inputChars[0] == '+' || inputChars[0] != '-'){ // positive integer
@@ -135,7 +140,7 @@ public class LexicalToken {
 			else return false;
 		}
 		else{
-			if(inputChars.length > 1 && inputChars[0] == '0')
+			if(inputChars.length > 2 && inputChars[0] == '0')
 				return true;
 			else return false;
 		}
