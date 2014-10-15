@@ -1,9 +1,12 @@
 import java.util.*;
 
-
 public class LexicalToken {
 	
 	public enum TokenClass {INTEGER, OCTAL, HEXADECIMAL};
+	public static final String MAX_INTEGER_VALUE = String.valueOf(Integer.MAX_VALUE);
+	public static final String MIN_INTEGER_VALUE = String.valueOf(Integer.MIN_VALUE);
+	public static final String MAX_OCTAL_VALUE = "37777777777";
+	public static final String MAX_HEX_VALUE = "FFFFFFFF";
 	
 	private TokenClass tClass;
 	private String tValue;
@@ -12,7 +15,10 @@ public class LexicalToken {
 	public LexicalToken(TokenClass tClass, String tValue){
 		this.tClass = tClass;
 		this.tValue = tValue;
-		inttValue = toInt();
+		if(!this.hasOverflow())
+			inttValue = toInt();
+		else
+			System.out.println("OVERFLOW!!!");
 	}
 	
 	public TokenClass gettClass(){
@@ -36,17 +42,82 @@ public class LexicalToken {
 	 * Checks if the tValue will overflow when converted to 32-bit integer.
 	 * @return True if overflow. False otherwise.
 	 */
-	private boolean checkOverflow(){
+	private boolean hasOverflow(){
 		assert(tValue != "");
 		assert(!this.hasLeadingZeros());
 		char[] inputChars = tValue.toCharArray();
 		if(tClass == TokenClass.INTEGER){
-			//check for min value
-			int min = Integer.MIN_VALUE;
-			if(inputChars[0] == '-'){
-				
+			if(inputChars[0] == '+' || inputChars[0] != '-'){ // positive integer
+				if(inputChars[0] == '+'){
+					//remove plus sign
+					char[] tempArray = new char[inputChars.length -1];
+					System.arraycopy(inputChars, 1, tempArray, 0, tempArray.length);
+					inputChars = tempArray;
+				}
+				// check if length is greater than max length
+				if(inputChars.length > MAX_INTEGER_VALUE.length())
+					return true; // overflow
+				else if(inputChars.length == MAX_INTEGER_VALUE.length()){
+					//check further
+					char[] maxIntChars = MAX_INTEGER_VALUE.toCharArray();
+					for(int i = 0; i < inputChars.length; i++){
+						if(inputChars[i] > maxIntChars[i])
+							return true; // overflow
+						else if(inputChars[i] < maxIntChars[i])
+							return false; // no overflow
+						else
+							continue;
+					}
+				}
+				else //cant be overflow
+					return false;
+			}
+			else{ // negative integer
+				// remove negative sign
+				char[] tempArray = new char[inputChars.length -1];
+				System.arraycopy(inputChars, 1, tempArray, 0, tempArray.length);
+				inputChars = tempArray;
+				char[] minIntChars = MIN_INTEGER_VALUE.replace("-", "").toCharArray();
+				// if length is greater than max length, there is an overflow
+				if(inputChars.length > minIntChars.length)
+					return true; // definitely overflow
+				else if(inputChars.length == minIntChars.length){ // check further for overflow
+					for(int i = 0; i < inputChars.length; i++){
+						if(inputChars[i] > minIntChars[i])
+							return true; // overflow
+						else if(inputChars[i] < minIntChars[i])
+							return false; // no overflow
+						else
+							continue;
+					}
+				}
+				else	// cant be overflow
+					return false;
 			}
 		}
+		else if(tClass == LexicalToken.TokenClass.OCTAL){
+			String tempInput = tValue.replace("b", "");
+			inputChars = tempInput.replace("B", "").toCharArray();
+			// overflow if input is greater length than max octal value
+			if(inputChars.length > MAX_OCTAL_VALUE.length())
+				return true;
+			else if(inputChars.length == MAX_OCTAL_VALUE.length()){
+				if(inputChars[0] > MAX_OCTAL_VALUE.toCharArray()[0])
+					return true;
+			}
+			else
+				return false;
+		}
+		else if(tClass == LexicalToken.TokenClass.HEXADECIMAL){
+			String tempInput = tValue.replace("h", "");
+			inputChars = tempInput.replace("H", "").toCharArray();
+			// overflow if input is greater length than max hex value
+			if(inputChars.length > MAX_HEX_VALUE.length())
+				return true;
+			else
+				return false;
+		}
+		return false;
 	}
 	
 	/**
