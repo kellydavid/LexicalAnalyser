@@ -2,9 +2,15 @@
 public class LexicalAnalyserApp {
 	
 	public static void main(String[] args){
-		String test = "0h";
-		LexicalToken lToken = LexicalAnalyser.analyseString(test);
-		System.out.println(lToken.toString() + "\n");
+		String input = "100000000000000000000000000000000000000000000000";
+		LexicalToken lToken = null;
+		try{
+			lToken = LexicalAnalyser.analyseString(input);
+			System.out.println(lToken.toString() + "\n");
+		}
+		catch(Exception e){
+			System.out.println("Error: " + e.getMessage() + "\nFor input: " + input);
+		}
 	}
 	
 }

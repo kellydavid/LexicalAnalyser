@@ -12,13 +12,15 @@ public class LexicalToken {
 	private String tValue;
 	private int inttValue;
 	
-	public LexicalToken(TokenClass tClass, String tValue){
+	public LexicalToken(TokenClass tClass, String tValue) throws ArithmeticException{
 		this.tClass = tClass;
 		this.tValue = tValue;
-		if(!this.hasOverflow())
-			inttValue = toInt();
+		if(this.hasLeadingZeros())
+			throw new ArithmeticException("Leading zeros.");
+		else if(this.hasOverflow())
+			throw new ArithmeticException("Overflow occurred.");
 		else
-			System.out.println("OVERFLOW!!!");
+			inttValue = toInt();
 	}
 	
 	public TokenClass gettClass(){
@@ -45,11 +47,6 @@ public class LexicalToken {
 	private boolean hasOverflow(){
 		assert(tValue != "");
 		assert(!this.hasLeadingZeros());
-		if(this.hasLeadingZeros()){
-			System.out.println("LEADING ZEROS!!!");
-			return false;
-		}
-			
 		char[] inputChars = tValue.toCharArray();
 		if(tClass == TokenClass.INTEGER){
 			if(inputChars[0] == '+' || inputChars[0] != '-'){ // positive integer

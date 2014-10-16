@@ -12,7 +12,9 @@ public class LexicalAnalyser {
 	 * @param input
 	 * @return Returns lexical token if valid input or null otherwise.
 	 */
-	public static LexicalToken analyseString(String input){
+	public static LexicalToken analyseString(String input) throws Exception{
+		if(input.length() > MAX_INPUT_LENGTH)
+			throw new Exception("Exceeds maximum length of input.");
 		//append end marker
 		if(input.contains(END_MARKER + ""))
 			return null;//throw exception
@@ -34,7 +36,7 @@ public class LexicalAnalyser {
 				else if(isSign(current_char))
 					nextState = 5;
 				else
-					return null;
+					throw new Exception("No input.");
 				break;
 			case 2:
 				if(isOct(current_char))
@@ -50,7 +52,7 @@ public class LexicalAnalyser {
 				else if(isEndMarker(current_char))
 					return new LexicalToken(LexicalToken.TokenClass.INTEGER, input);
 				else
-					return null;
+					throw new Exception("Invalid Input.");
 				break;
 			case 3:
 				if(isDec(current_char))
@@ -62,7 +64,7 @@ public class LexicalAnalyser {
 				else if(isEndMarker(current_char))
 					return new LexicalToken(LexicalToken.TokenClass.INTEGER, input);
 				else
-					return null;
+					throw new Exception("Invalid Input.");
 				break;
 			case 4:
 				if(isDec(current_char) || isHex(current_char))
@@ -70,7 +72,7 @@ public class LexicalAnalyser {
 				else if(isH(current_char))
 					nextState = 8;
 				else
-					return null;
+					throw new Exception("Invalid Input.");
 				break;
 			case 5:
 				if(isDec(current_char))
@@ -84,7 +86,7 @@ public class LexicalAnalyser {
 				else if(isEndMarker(current_char))
 					return new LexicalToken(LexicalToken.TokenClass.INTEGER, input);
 				else
-					return null;
+					throw new Exception("Invalid Input.");
 				break;
 			case 7:
 				if(isDec(current_char) || isHex(current_char))
@@ -94,12 +96,12 @@ public class LexicalAnalyser {
 				else if(isEndMarker(current_char))
 					return new LexicalToken(LexicalToken.TokenClass.OCTAL, input);
 				else 
-					return null;
+					throw new Exception("Invalid Input.");
 			case 8:
 				if(isEndMarker(current_char))
 					return new LexicalToken(LexicalToken.TokenClass.HEXADECIMAL, input);
 				else
-					return null;
+					throw new Exception("Invalid Input.");
 			default:
 				return null;
 			}
