@@ -2,7 +2,11 @@
 public class LexicalAnalyserApp {
 	
 	public static void main(String[] args){
-		String input = "100000000000000000000000000000000000000000000000";
+		if(args.length != 1){
+			System.out.println("Please enter one input string argument.");
+			return;
+		}
+		String input = args[0];
 		LexicalToken lToken = null;
 		try{
 			lToken = LexicalAnalyser.analyseString(input);
