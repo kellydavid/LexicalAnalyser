@@ -1,5 +1,11 @@
 import java.util.*;
 
+/**
+ * @author David Kelly 17/10/2014
+ * 
+ * This class represents a Lexical Token.
+ *
+ */
 public class LexicalToken {
 	
 	public enum TokenClass {INTEGER, OCTAL, HEXADECIMAL};
@@ -9,8 +15,8 @@ public class LexicalToken {
 	public static final String MAX_HEX_VALUE = "FFFFFFFF";
 	
 	private TokenClass tClass;
-	private String tValue;
-	private int inttValue;
+	private String tValue; // value as a string.
+	private int inttValue; // value represented as an integer.
 	
 	public LexicalToken(TokenClass tClass, String tValue) throws ArithmeticException{
 		this.tClass = tClass;

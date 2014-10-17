@@ -1,6 +1,7 @@
 /**
- * @author david
+ * @author David Kelly 17/10/2014
  * 
+ * This class takes care of converting a string input into a Lexical Token using the analyseString method.
  */
 public class LexicalAnalyser {
 	

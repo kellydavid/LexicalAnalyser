@@ -1,4 +1,9 @@
 
+/**
+ * @author David Kelly 17/10/2014
+ *
+ * This is the main class of the application.
+ */
 public class LexicalAnalyserApp {
 	
 	public static void main(String[] args){
