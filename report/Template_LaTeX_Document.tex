@@ -1,0 +1,208 @@
+% To insert java code:
+% \lstinputlisting[label=Java code,caption=Java Code]{code.java}
+% To insert and image:
+% \includegraphics{image.png}
+
+\documentclass[11pt]{article}
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage{pifont}
+\newcommand{\tick}{\ding{52}}
+
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{lipsum}
+\usepackage{courier}
+\usepackage{amsmath}
+
+\usepackage{caption}
+\DeclareCaptionFont{white}{\color{white}}
+\DeclareCaptionFormat{listing}{\colorbox{gray}{\parbox{\textwidth}{#1#2#3}}}
+\captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white}
+
+% For including images
+\usepackage{graphicx}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\usepackage{grffile}
+
+%Change margins
+\usepackage[hmargin=1.3cm, vmargin=2.25cm]{geometry}
+
+\lstset{
+language=Java,
+captionpos=t,
+tabsize=3,
+frame=lines,
+frame=b,
+basicstyle=\footnotesize\ttfamily,
+breaklines=true, 
+keywordstyle=\color{blue},
+commentstyle=\color{green},
+stringstyle=\color{red},
+numbers=left,
+numberstyle=\tiny,
+numbersep=5pt,
+breaklines=true,
+showstringspaces=false,
+emph={label}}
+
+\begin{document}
+\begin{titlepage}
+\title
+{
+Compiler Design CS3071 - Lab 2
+}
+\author{David Kelly}
+\date{\today}
+\maketitle
+
+\thispagestyle{empty}
+
+\end{titlepage}
+
+\tableofcontents
+
+\thispagestyle{empty}
+
+\pagebreak
+
+\setcounter{page}{1}
+\pagenumbering{arabic}
+
+\section{Introduction}
+This report will describe the design of a Lexical Analyser which can process a 32-bit integer, octal or hexadecimal constant defined by the following regular expression:
+\begin{equation}
+((+ | -)?[0-9]+) | [0-7]+[bB] | [0-9a-fA-F]+[hH]
+\end{equation}
+
+\section{Transition Table}
+The transition table to check for a valid integer, octal or hexadecimal constant is shown below. It starts in state $1$ and it has a total of $8$ states.
+
+\begin{itemize}
+\item[State $1$] \hfill \\
+This is the first state where the state machine begins. If an octal digit is input, the state machine will transition to state $2$. If the input is an $8$ or a $9$, it will transition to state $3$. If a hexadecimal digit is input, transition to state $4$. If a sign is entered in this state, the machine will transition to state $5$, expecting only decimal digits.
+\item[State $2$] \hfill \\
+This state is expecting octal digits, if an octal digit is input the machine will stay in this state (State $2$).
+ If a decimal or hexadecimal digit is input, there is no way that the string can be an octal number and so the machine will transition to states $3$ and $4$ respectively. 
+ If the letter "b" is input, the machine transitions to state $7$ which will check if the string is indeed a valid octal number or just a hexadecimal number. 
+ If the letter "h" is input, the machine will transition to state $8$, where it will check if the string is a valid hexadecimal constant. 
+ If an end marker is received, then the string must be an integer as only octal digits have been received with no "b" to indicate that the string is an octal constant.
+\item[State $3$] \hfill \\
+If a decimal digit is received, the machine will stay in this state, expecting more decimal digits. If a hexadecimal value is received, the machine will transition to state $4$. If the letter 'h' is received, then the machine will transition to state $8$, expecting the end of a hexadecimal number. If the end marker is received, the string is an integer.
+\item[State $4$] \hfill \\
+If a hexadecimal digit is received, the machine will stay in state $4$ expecting more hexadecimal digits. If a 'h' is received, the machine will transition to state $8$ to check for the end of a hexadecimal string. 
+\item[State $5$] \hfill \\
+State $5$ is expecting a decimal digit to transition to state 6. The purpose of this state is to check that a decimal digit follows a sign at the beginning of a string.
+\item[State $6$] \hfill \\
+When decimal digits are received the machine will stay in this state. Since the machine has already received a sign at the beginning of the string in this state, we know that the string must represent an integer to be valid. If an end marker is received, then the string is an integer.
+\item[State $7$] \hfill \\
+State $7$ is needed to check whether a 'b' in a string will indicate the end of an octal value or if it is part of a hexadecimal number. If the end marker is received, the string is an octal value.
+\item[State $8$] \hfill \\
+In this state, the end marker indicates a hexadecimal string as the previous input was hexadecimal digits followed by a 'h'.
+\end{itemize}
+\newpage
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|l|}
+\hline
+State & OCT & DEC & b | B & HEX & SIGN & h | H & -I  \\ \hline
+1     & 2   & 3   &       & 4   & 5    &       &     \\ \hline
+2     & 2   & 3   & 7     & 4   &      & 8     & DEC \\ \hline
+3     &     & 3   &       & 4   &      & 8     & DEC \\ \hline
+4     &     & 4   &       & 4   &      & 8     &     \\ \hline
+5     &     & 6   &       &     &      &       &     \\ \hline
+6     &     & 6   &       &     &      &       & DEC \\ \hline
+7     &     & 4   &       & 4   &      & 8     & OCT \\ \hline
+8     &     &     &       &     &      &       &     \\ \hline
+\end{tabular}
+\caption{Transition Table}
+\label{Transition Table}
+\end{table}
+
+\begin{center}
+\textit{Note: Empty cells indicate error state.}
+\end{center}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+Symbol & Description                         \\ \hline
+OCT    & Digits from 0 - 7 (A subset of DEC) \\ \hline
+DEC    & Digits from 0 - 9                   \\ \hline
+b | B  & The letter 'b' or 'B' (A subset of HEX) \\ \hline
+HEX    & Digits from 0 - 9 | a-f | A - F     \\ \hline
+SIGN   & '+' | '-'                           \\ \hline
+h | H  & The letter 'h' or 'H'               \\ \hline
+-I     & End Marker                          \\ \hline
+\end{tabular}
+\caption{Transition Table Symbols}
+\label{Transition Table Symbols}
+\end{table}
+
+\newpage
+\section{Overflow}
+In the implementation of the Lexical Analyser, overflow is checked by analysing the string input (separate from the state machine). This is done after a Lexical Token has been generated by the program. The program checks the length of the value as part of checking for overflow. For this reason, a value with leading zeros is treated as invalid input. 
+\subsection{Integer Overflow}
+To check for integer overflow, the program performs the following steps:
+\begin{itemize}
+\item If the length of the input is \textit{greater than} the length of the maximum integer (positive or negative), then there is overflow.
+\item If the length of the input is \textit{less than} the length of the maximum integer (positive or negative), then there is overflow.
+\item If the length of the input is \textit{equal to} the length of the maximum integer (positive or negative), then further checking takes place.
+\item The most significant digit of the input is compared to the most significant digit of the maximum integer. If the input is greater than the maximum integer digit, then overflow has occured. If the input digit is equal to or less than the maximum integer digit then overflow has not occured so far and the program continues to check the rest of the digits.
+\end{itemize}
+\subsection{Octal Overflow}
+To check for octal overflow, the program performs the following steps:
+\begin{itemize}
+\item If the length of the input is \textit{greater than} the length of the maximum octal number, then there is overflow.
+\item If the length of the input is \textit{less than} the length of the maximum octal number, then there is overflow.
+\item If the length of the input is \textit{equal to} the length of the maximum octal number, then further checking takes place.
+\item The most significant digit of the input is compared to the most significant digit of the maximum octal number value. If the input digit is greater than the maximum octal digit, then overflow has occured, otherwise there is no overflow.
+\end{itemize}
+\subsection{Hexadecimal Overflow}
+To check for hexadecimal overflow, the program performs the following steps:
+\begin{itemize}
+\item If the length of the input is \textit{greater than} the length of the maximum hexadecimal number, then there is overflow.
+\item If the length of the input is \textit{less than} or \textit{equal to} the length of the maximum hexadecimal number, then there is overflow.
+\end{itemize}
+
+\newpage
+\section{Test Inputs}
+A list of test inputs that will visit all non-error states in the transition table.
+\begin{itemize}
+\item[1234] \hfill \\
+Expected Result: (INTEGER, 1234) Integer Representation: 1234\\
+Program Successful: True
+\item[1238] \hfill \\
+Expected Result: (INTEGER, 1238) Integer Representation: 1238\\
+Program Successful: True
+\item[+1238] \hfill \\
+Expected Result: (INTEGER, +1238) Integer Representation: 1238\\
+Program Successful: True
+\item[-1238] \hfill \\
+Expected Result: (INTEGER, -1238) Integer Representation: 1238\\
+Program Successful: True
+\item[1341b] \hfill \\
+Expected Result: (OCTAL, 1341b) Integer Representation: 737\\
+Program Successful: True
+\item[1324bH] \hfill \\
+Expected Result: ((HEXADECIMAL, 1324bH) Integer Representation: 78411\\
+Program Successful: True
+\item[1324bbH] \hfill \\
+(HEXADECIMAL, 1324bbH) Integer Representation: 1254587\\
+Program Successful: True
+\end{itemize}
+
+\newpage
+\section{Implementation}
+The program comprises of 3 java classes. Each of which is described briefly below.
+\subsection{LexicalAnalyserApp.java}
+This class is the main class containing the main method. It takes user input as a string and passes it to the Lexical Analyser class where it will be converted into a Lexical Token.
+\subsection{LexicalAnalyser.java}
+This class contains a static method analyseString(). This method contains a state machine that parses through the input string. The state machine is coded from the state transition table shown previously in this report. If the state machine does not encounter any errors, a Lexical Token will be generated. If the state machine encounters an error or a value has overflow or leading zeros, then an exception is thrown and the user is notified.
+\subsection{LexicalToken.java}
+This class represents a Lexical Token. It contains a field for the class and a field for the value. It also contains methods that check for leading zero's and overflow. It also converts the string value into an integer value. If an overflow occurs or leading zeros are detected, an exception is thrown and the program exits with a notification for the user.
+
+\end{document}
