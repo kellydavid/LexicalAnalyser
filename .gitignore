@@ -1,6 +1,7 @@
 # Ignore java binary files
 .DS_Store
 bin/*
+build/*
 .classpath
 .project
 .settings/*
