@@ -13,11 +13,33 @@ public class LexicalAnalyser {
 	 * @return Returns lexical token if valid input or null otherwise.
 	 */
 	public static LexicalToken analyseString(String input) throws Exception{
+		/*
+	
+	The state machine uses the following transition table:
+	
+	____|_OCT_|_DEC_|_bB_|_HEX_|_sign_|_hH_|_-1_|
+	  1 |  2  |  3  |    |  4  |  5   |    |    |
+	---------------------------------------------
+	  2 |  2  |  3  |  7 |  4  |      |  8 |DEC |
+	---------------------------------------------
+	  3 |     |  3  |    |  4  |      |  8 |DEC |
+	---------------------------------------------
+	  4 |     |  4  |    |  4  |      |  8 |    |
+	---------------------------------------------
+	  5 |     |  6  |    |     |      |    |    |
+	---------------------------------------------
+	  6 |     |  6  |    |     |      |    |DEC |
+	---------------------------------------------
+	  7 |     |  4  |    |  4  |      |  8 |OCT |
+	---------------------------------------------
+	  8 |     |     |    |     |      |    |HEX |
+	---------------------------------------------
+		 */
 		if(input.length() > MAX_INPUT_LENGTH)
 			throw new Exception("Exceeds maximum length of input.");
 		//append end marker
 		if(input.contains(END_MARKER + ""))
-			return null;//throw exception
+			throw new Exception("Invalid Input.");//throw exception
 		String processInput = input + END_MARKER;
 		int machineState = 1;
 		int nextState = 1;
@@ -97,13 +119,14 @@ public class LexicalAnalyser {
 					return new LexicalToken(LexicalToken.TokenClass.OCTAL, input);
 				else 
 					throw new Exception("Invalid Input.");
+				break;
 			case 8:
 				if(isEndMarker(current_char))
 					return new LexicalToken(LexicalToken.TokenClass.HEXADECIMAL, input);
 				else
 					throw new Exception("Invalid Input.");
 			default:
-				return null;
+				throw new Exception("Invalid Input.");
 			}
 			machineState = nextState;
 		}
